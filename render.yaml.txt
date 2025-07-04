@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: klevant-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn backend.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: backend.settings
+      - key: SECRET_KEY
+        value: your-very-secret-django-key
+      - key: DATABASE_URL
+        value: your-database-url  # You will get this from Render dashboard
+      - key: EMAIL_HOST_USER
+        value: bashaveerji118@gmail.com
+      - key: EMAIL_HOST_PASSWORD
+        value: kwepgnxjxxemapvv
