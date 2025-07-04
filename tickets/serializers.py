@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Ticket, Quotation, QuotationItem, AdditionalProduct, TicketStatusHistory, Notification, OutwardProductAssignment
+from .models import Ticket, Quotation, QuotationItem, AdditionalProduct, TicketStatusHistory, Notification, OutwardProductAssignment, TechnicianReview
 from django.contrib.auth.models import User
 from products.models import Product
 
@@ -137,4 +137,9 @@ class OutwardProductAssignmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OutwardProductAssignment
-        fields = ['id', 'technician', 'product', 'quantity_assigned', 'quantity_returned', 'assigned_at', 'returned_at', 'status', 'pending_quantity'] 
+        fields = ['id', 'technician', 'product', 'quantity_assigned', 'quantity_returned', 'assigned_at', 'returned_at', 'status', 'pending_quantity']
+
+class TechnicianReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnicianReview
+        fields = '__all__' 

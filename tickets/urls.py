@@ -4,7 +4,7 @@ from .views import (
     AdminTicketViewSet, AdminTechnicianViewSet,
     QuotationViewSet, AdditionalProductViewSet,
     TechnicianNotificationViewSet, OutwardProductAssignmentViewSet,
-    admin_summary
+    admin_summary, TechnicianReviewViewSet
 )
 
 router = DefaultRouter()
@@ -14,6 +14,7 @@ router.register(r'quotations', QuotationViewSet, basename='quotation')
 router.register(r'additional-products', AdditionalProductViewSet, basename='additional-product')
 router.register(r'technician/notifications', TechnicianNotificationViewSet, basename='technician-notification')
 router.register(r'outward-products', OutwardProductAssignmentViewSet, basename='outward-product')
+router.register(r'technician-reviews', TechnicianReviewViewSet)
 
 urlpatterns = [
     path('api/admin/summary/', admin_summary, name='admin-summary'),

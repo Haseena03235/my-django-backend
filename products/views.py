@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, Banner
+from .serializers import ProductSerializer, BannerSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from django.core.files.storage import default_storage
+from rest_framework import permissions
 
 # Create your views here.
 
@@ -14,13 +15,26 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        if self.request.query_params.get('latest') == 'true':
+            queryset = queryset.order_by('-created_at')[:10]  # Return latest 10 products
+        return queryset
+
 class ImageUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         if 'image' not in request.FILES:
-            return Response({'error': 'No image provided'}, status=status.HTTP_400_BAD_REQUEST)
-        file_obj = request.FILES['image']
-        file_name = default_storage.save(file_obj.name, file_obj)
-        image_url = request.build_absolute_uri('/media/' + file_name)
-        return Response({'image_url': image_url}, status=status.HTTP_200_OK)
+            return Response({"error": "No image uploaded."}, status=status.HTTP_400_BAD_REQUEST)
+        image = request.FILES['image']
+        # Save the image or process it as needed
+        return Response({"message": f"Image '{image.name}' uploaded!"}, status=status.HTTP_200_OK)
+
+class BannerViewSet(viewsets.ModelViewSet):
+    queryset = Banner.objects.filter(is_active=True).order_by('-created_at')
+    serializer_class = BannerSerializer
+    permission_classes = [permissions.AllowAny]

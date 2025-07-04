@@ -164,3 +164,17 @@ class OutwardProductAssignment(models.Model):
 
     def __str__(self):
         return f"{self.technician.username} - {self.product.name} ({self.quantity_assigned} assigned, {self.quantity_returned} returned)"
+
+class TechnicianReview(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='reviews')
+    technician = models.ForeignKey(User, on_delete=models.CASCADE, related_name='technician_reviews')
+    reviewer_name = models.CharField(max_length=100)  # Customer name
+    rating = models.PositiveIntegerField()  # 1-5 stars
+    review = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Review for {self.technician.username} (Ticket #{self.ticket.id})"

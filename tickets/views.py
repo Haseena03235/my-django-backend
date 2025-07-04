@@ -6,13 +6,13 @@ from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from django.db.models import Q, Sum
 from django.http import HttpResponse
-from .models import Ticket, Quotation, QuotationItem, AdditionalProduct, TicketStatusHistory, Notification, OutwardProductAssignment, Product
+from .models import Ticket, Quotation, QuotationItem, AdditionalProduct, TicketStatusHistory, Notification, OutwardProductAssignment, Product, TechnicianReview
 from .serializers import (
     TicketSerializer, TicketCreateSerializer, TicketUpdateSerializer, TicketListSerializer,
     QuotationSerializer, QuotationCreateSerializer, QuotationUpdateSerializer,
     AdditionalProductSerializer, AdditionalProductCreateSerializer,
     TicketStatusHistorySerializer, UserSerializer, NotificationSerializer,
-    OutwardProductAssignmentSerializer, ProductSerializer
+    OutwardProductAssignmentSerializer, ProductSerializer, TechnicianReviewSerializer
 )
 from .utils import generate_quotation_pdf, save_quotation_pdf
 import json
@@ -236,6 +236,39 @@ class AdminTicketViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @action(detail=True, methods=['post'])
+    def cancel_ticket(self, request, pk=None):
+        """Cancel a ticket (by admin or technician)"""
+        ticket = self.get_object()
+        if ticket.status not in ['pending', 'accepted', 'in_progress']:
+            return Response({'error': 'Only pending, accepted, or in-progress tickets can be cancelled.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        ticket.status = 'cancelled'
+        ticket.save()
+        TicketStatusHistory.objects.create(
+            ticket=ticket,
+            status='cancelled',
+            changed_by=request.user,
+            notes='Ticket cancelled'
+        )
+        return Response({'message': 'Ticket cancelled successfully'})
+
+    @action(detail=True, methods=['post'])
+    def update_payment(self, request, pk=None):
+        """Update payment status and amount for a ticket"""
+        ticket = self.get_object()
+        amount = request.data.get('amount')
+        if amount is None:
+            return Response({'error': 'Amount is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            amount = float(amount)
+        except ValueError:
+            return Response({'error': 'Invalid amount.'}, status=status.HTTP_400_BAD_REQUEST)
+        ticket.amount_paid = amount
+        ticket.save()
+        # Optionally, add a status history entry or notification here
+        return Response({'message': 'Payment updated successfully'})
+
 class AdminTechnicianViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Admin API for viewing technicians
@@ -390,3 +423,18 @@ def admin_transactions(request):
                 'status': payment.status,  # e.g. 'Payment Authorized', 'Order Shipped', etc.
             })
     return Response(transactions)
+
+class TicketViewSet(viewsets.ModelViewSet):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+
+class TechnicianReviewViewSet(viewsets.ModelViewSet):
+    queryset = TechnicianReview.objects.all()
+    serializer_class = TechnicianReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        technician_id = self.request.query_params.get('technician')
+        if technician_id:
+            return self.queryset.filter(technician_id=technician_id)
+        return self.queryset

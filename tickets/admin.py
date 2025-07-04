@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ticket, Quotation, QuotationItem, AdditionalProduct, TicketStatusHistory, Notification
+from .models import Ticket, Quotation, QuotationItem, AdditionalProduct, TicketStatusHistory, Notification, OutwardProductAssignment, TechnicianReview
 
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
@@ -61,3 +61,6 @@ class NotificationAdmin(admin.ModelAdmin):
     list_filter = ['read', 'created_at', 'recipient']
     search_fields = ['title', 'message', 'recipient__username']
     readonly_fields = ['created_at']
+
+admin.site.register(OutwardProductAssignment)
+admin.site.register(TechnicianReview)
