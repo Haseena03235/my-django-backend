@@ -16,6 +16,7 @@ from django.conf import settings
 from django.templatetags.static import static
 import dj_database_url
 from decouple import config
+from urllib.parse import urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +31,16 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-dev-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'my-django-backend-iy6v.onrender.com']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'my-django-backend-iy6v.onrender.com'
+]
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -51,6 +61,7 @@ INSTALLED_APPS = [
     'tickets',
     'backend',
     'whitenoise.runserver_nostatic',
+    'faqs',
 ]
 
 MIDDLEWARE = [
@@ -141,10 +152,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True  # For development only!
-
+CORS_ALLOW_ALL_ORIGINS = False  # Set to False to use CORS_ALLOWED_ORIGINS
 CORS_ALLOWED_ORIGINS = [
-    "https://your-ngrok-url.ngrok-free.app"
+    "https://my-django-backend-iy6v.onrender.com",
+    "https://your-flutter-web-app.firebaseapp.com",  # <-- Update to your real frontend domain
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://my-django-backend-iy6v.onrender.com",
+    "https://your-flutter-web-app.firebaseapp.com"   # <-- Same here
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

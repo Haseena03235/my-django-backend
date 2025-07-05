@@ -26,6 +26,7 @@ from products.views import ProductViewSet
 from orders.views import OrderViewSet
 from tickets.views import TicketViewSet
 from users.views import UserViewSet
+from faqs.views import FAQViewSet
 
 # Create the router and register your ViewSets
 router = routers.DefaultRouter()
@@ -33,6 +34,7 @@ router.register(r'products', ProductViewSet)
 router.register(r'orders', OrderViewSet)
 router.register(r'tickets', TicketViewSet)
 router.register(r'users', UserViewSet)
+router.register(r'faqs', FAQViewSet)
 # Add more as needed
 
 def home(request):
